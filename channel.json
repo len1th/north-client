@@ -1,0 +1,7 @@
+{
+  "clientName": "North Client",
+  "channel": "stable",
+  "latestClientVersion": "1.0.0-mvp",
+  "latestMinecraftVersion": "1.21.11",
+  "manifestBaseUrl": "https://raw.githubusercontent.com/len1th/north-client/main/manifests"
+}
