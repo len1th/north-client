@@ -3,6 +3,7 @@ package dev.northclient.screen;
 import dev.northclient.hud.HudBounds;
 import dev.northclient.hud.HudElement;
 import dev.northclient.hud.HudManager;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -10,6 +11,8 @@ import net.minecraft.text.Text;
 public final class HudEditorScreen extends Screen {
   private final HudManager hudManager;
   private HudElement selected;
+  private double dragOffsetX;
+  private double dragOffsetY;
 
   public HudEditorScreen(HudManager hudManager) {
     super(Text.literal("North HUD Editor"));
@@ -34,6 +37,41 @@ public final class HudEditorScreen extends Screen {
       drawBorder(context, (int) b.x(), (int) b.y(), (int) b.width(), (int) b.height(), color);
     }
     super.render(context, mouseX, mouseY, delta);
+  }
+
+  @Override
+  public boolean mouseClicked(Click click, boolean doubled) {
+    for (HudElement element : hudManager.elements()) {
+      if (element.getBounds().contains(click.x(), click.y())) {
+        selected = element;
+        dragOffsetX = click.x() - element.getBounds().x();
+        dragOffsetY = click.y() - element.getBounds().y();
+        return true;
+      }
+    }
+    return super.mouseClicked(click, doubled);
+  }
+
+  @Override
+  public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+    if (selected != null) {
+      HudBounds b = selected.getBounds();
+      float x = (float) Math.max(0, Math.min(width - b.width(), click.x() - dragOffsetX));
+      float y = (float) Math.max(0, Math.min(height - b.height(), click.y() - dragOffsetY));
+      selected.setPosition(Math.round(x / 8f) * 8f, Math.round(y / 8f) * 8f);
+      return true;
+    }
+    return super.mouseDragged(click, offsetX, offsetY);
+  }
+
+  @Override
+  public boolean mouseReleased(Click click) {
+    if (selected != null) {
+      hudManager.save();
+      selected = null;
+      return true;
+    }
+    return super.mouseReleased(click);
   }
 
   private void drawBorder(DrawContext context, int x, int y, int width, int height, int color) {
