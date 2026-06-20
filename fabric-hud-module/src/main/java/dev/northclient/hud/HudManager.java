@@ -46,7 +46,18 @@ public final class HudManager {
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
     for (HudElement element : elements) {
       if (element.isEnabled()) {
+        float scale = element.getScale();
+        if (Math.abs(scale - 1.0f) < 0.001f) {
+          element.render(context, tickDelta, cps, keys);
+          continue;
+        }
+        HudBounds bounds = element.getBounds();
+        context.getMatrices().pushMatrix();
+        context.getMatrices().translate(bounds.x(), bounds.y());
+        context.getMatrices().scale(scale, scale);
+        context.getMatrices().translate(-bounds.x(), -bounds.y());
         element.render(context, tickDelta, cps, keys);
+        context.getMatrices().popMatrix();
       }
     }
   }
