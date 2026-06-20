@@ -11,6 +11,8 @@ public final class CpsTracker {
   private final Deque<Long> rightClicks = new ArrayDeque<>();
   private boolean leftDown;
   private boolean rightDown;
+  private int sessionLeftClicks;
+  private int sessionRightClicks;
 
   public void tick(MinecraftClient client) {
     if (client == null || client.getWindow() == null) return;
@@ -18,8 +20,14 @@ public final class CpsTracker {
     long handle = client.getWindow().getHandle();
     boolean currentLeft = GLFW.glfwGetMouseButton(handle, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
     boolean currentRight = GLFW.glfwGetMouseButton(handle, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
-    if (currentLeft && !leftDown) leftClicks.addLast(now);
-    if (currentRight && !rightDown) rightClicks.addLast(now);
+    if (currentLeft && !leftDown) {
+      leftClicks.addLast(now);
+      sessionLeftClicks++;
+    }
+    if (currentRight && !rightDown) {
+      rightClicks.addLast(now);
+      sessionRightClicks++;
+    }
     leftDown = currentLeft;
     rightDown = currentRight;
     trim(leftClicks, now);
@@ -40,6 +48,14 @@ public final class CpsTracker {
 
   public boolean isRightDown() {
     return rightDown;
+  }
+
+  public int sessionLeftClicks() {
+    return sessionLeftClicks;
+  }
+
+  public int sessionRightClicks() {
+    return sessionRightClicks;
   }
 
   private void trim(Deque<Long> clicks, long now) {

@@ -13,7 +13,7 @@ public interface HudElement {
   void setPosition(float x, float y);
   float getScale();
   void setScale(float scale);
+  void resetDefault();
   void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys);
   void renderPreview(DrawContext context, float tickDelta);
 }
-

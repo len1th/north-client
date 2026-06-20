@@ -17,7 +17,7 @@
     { "name": "Krypton", "version": "latest-compatible", "required": true, "source": "modrinth", "projectId": "krypton", "sha256": "", "fileName": "krypton.jar", "side": "client", "estimatedSizeMb": 1 },
     { "name": "Dynamic FPS", "version": "latest-compatible", "required": true, "source": "modrinth", "projectId": "dynamic-fps", "sha256": "", "fileName": "dynamic-fps.jar", "side": "client", "estimatedSizeMb": 1 },
     { "name": "Debugify", "version": "latest-compatible", "required": true, "source": "modrinth", "projectId": "debugify", "sha256": "", "fileName": "debugify.jar", "side": "client", "estimatedSizeMb": 1 },
-    { "name": "North Client HUD Module", "version": "1.0.3", "required": true, "source": "local-or-release", "projectId": "north-client-hud", "sha256": "c177eb60efbc27cad47dcf641117989c12244dddd223a0d57944141294ec38c2", "fileName": "north-client-hud-1.0.3.jar", "downloadUrl": "https://github.com/len1th/north-client/releases/download/north-client-hud-1.0.3/north-client-hud-1.0.3.jar", "javaRelease": 21, "classFileMajor": 65, "side": "client", "estimatedSizeMb": 1 },
+    { "name": "North Client HUD Module", "version": "1.0.4", "required": true, "source": "local-or-release", "projectId": "north-client-hud", "sha256": "a760ae0b99fd7ba6b7a76d2fd5f2d668ef05dc8523ed09ac4d1021a383825a8f", "fileName": "north-client-hud-1.0.4.jar", "downloadUrl": "https://github.com/len1th/north-client/releases/download/north-client-hud-1.0.4/north-client-hud-1.0.4.jar", "javaRelease": 21, "classFileMajor": 65, "side": "client", "estimatedSizeMb": 1 },
     { "name": "ModernFix", "version": "latest-compatible", "required": false, "source": "modrinth", "projectId": "modernfix", "sha256": "", "fileName": "modernfix.jar", "side": "client", "estimatedSizeMb": 2 },
     { "name": "MoreCulling", "version": "latest-compatible", "required": false, "source": "modrinth", "projectId": "moreculling", "sha256": "", "fileName": "moreculling.jar", "side": "client", "estimatedSizeMb": 1 },
     { "name": "Noisium", "version": "latest-compatible", "required": false, "source": "modrinth", "projectId": "noisium", "sha256": "", "fileName": "noisium.jar", "side": "client", "estimatedSizeMb": 1 },
@@ -37,7 +37,7 @@
     "defaultEditorKey": "RIGHT_SHIFT",
     "defaultPreset": "default",
     "presets": ["default", "pvp", "minimal", "performance", "streamer", "low-end"],
-    "elements": ["fps", "keystrokes", "mouse", "cps", "armor", "effects", "inventory"]
+    "elements": ["fps", "keystrokes", "mouse", "cps", "armor", "effects", "inventory", "ping", "clock", "hit-counter", "memory", "coordinates"]
   },
   "update": {
     "channel": "stable",

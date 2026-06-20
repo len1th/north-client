@@ -12,12 +12,10 @@ public final class MouseHudElement extends AbstractHudElement {
 
   @Override
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
-    drawPanel(context, "Mouse");
+    drawPanel(context, "Mouse", 0xFF4DA3FF);
     int x = (int) getBounds().x();
     int y = (int) getBounds().y();
-    context.fill(x + 8, y + 24, x + 58, y + 46, cps.isLeftDown() ? 0xCC22C7FF : 0xAA131C2B);
-    context.fill(x + 66, y + 24, x + 116, y + 46, cps.isRightDown() ? 0xCC22C7FF : 0xAA131C2B);
-    context.drawTextWithShadow(net.minecraft.client.MinecraftClient.getInstance().textRenderer, "LMB", x + 20, y + 31, cps.isLeftDown() ? 0xFF070B12 : 0xFFEAF4FF);
-    context.drawTextWithShadow(net.minecraft.client.MinecraftClient.getInstance().textRenderer, "RMB", x + 78, y + 31, cps.isRightDown() ? 0xFF070B12 : 0xFFEAF4FF);
+    drawKey(context, "LMB", x + 8, y + 24, 52, 24, cps.isLeftDown());
+    drawKey(context, "RMB", x + 68, y + 24, 52, 24, cps.isRightDown());
   }
 }

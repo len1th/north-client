@@ -11,18 +11,18 @@ import java.util.Collection;
 
 public final class EffectsHudElement extends AbstractHudElement {
   public EffectsHudElement() {
-    super("effects", "Buyu/Efekt HUD", 1680, 80, 188, 112, true);
+    super("effects", "Efekt HUD", 1660, 80, 216, 126, true);
   }
 
   @Override
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
-    drawPanel(context, "Effects");
+    drawPanel(context, "Active effects", 0xFFFFB84D);
     MinecraftClient client = MinecraftClient.getInstance();
     if (client == null || client.player == null) return;
     Collection<StatusEffectInstance> effects = client.player.getStatusEffects();
     int y = (int) getBounds().y() + 24;
     if (effects == null || effects.isEmpty()) {
-      context.drawTextWithShadow(client.textRenderer, "No active effects", (int) getBounds().x() + 8, y, 0xFF9FB4CC);
+      drawText(context, "No active effects", (int) getBounds().x() + 8, y, 0xFF9FB4CC);
       return;
     }
     int index = 0;
@@ -30,7 +30,10 @@ public final class EffectsHudElement extends AbstractHudElement {
       if (index >= 5) break;
       String name = effect.getTranslationKey().replace("effect.minecraft.", "");
       String line = name + " " + roman(effect.getAmplifier() + 1) + " " + duration(effect.getDuration());
-      context.drawTextWithShadow(client.textRenderer, line, (int) getBounds().x() + 8, y + index * 16, 0xFFEAF4FF);
+      int rowY = y + index * 18;
+      int color = effect.getDuration() <= 200 ? 0xFFFF5A5A : 0xFFEAF4FF;
+      drawText(context, line, (int) getBounds().x() + 8, rowY, color);
+      drawBar(context, (int) getBounds().x() + 132, rowY + 5, 64, 4, Math.min(1.0f, effect.getDuration() / 2400.0f), color);
       index++;
     }
   }
