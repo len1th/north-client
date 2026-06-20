@@ -26,7 +26,7 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-    renderBackground(context, mouseX, mouseY, delta);
+    context.fill(0, 0, width, height, 0x66070B12);
     context.drawCenteredTextWithShadow(textRenderer, "North HUD Editor", width / 2, 16, 0xFFEAF4FF);
     context.drawTextWithShadow(textRenderer, "Right Shift ile ac/kapat - HUD elemanlarini surukle", 16, 36, 0xFF9FB4CC);
 
