@@ -1,0 +1,43 @@
+plugins {
+  id 'fabric-loom' version '1.13-SNAPSHOT'
+  id 'maven-publish'
+}
+
+version = '1.0.1'
+group = 'dev.northclient'
+
+base {
+  archivesName = 'north-client-hud'
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
+repositories {
+  maven { url = 'https://maven.fabricmc.net/' }
+  mavenCentral()
+}
+
+dependencies {
+  minecraft "com.mojang:minecraft:1.21.11"
+  mappings "net.fabricmc:yarn:1.21.11+build.1:v2"
+  modImplementation "net.fabricmc:fabric-loader:0.19.3"
+  modImplementation fabricApi.module("fabric-key-binding-api-v1", "0.141.4+1.21.11")
+  modImplementation fabricApi.module("fabric-lifecycle-events-v1", "0.141.4+1.21.11")
+  modImplementation fabricApi.module("fabric-rendering-v1", "0.141.4+1.21.11")
+}
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+  options.release = 21
+}
+
+processResources {
+  inputs.property 'version', project.version
+  filesMatching('fabric.mod.json') {
+    expand 'version': project.version
+  }
+}
