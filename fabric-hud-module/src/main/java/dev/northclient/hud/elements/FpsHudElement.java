@@ -15,10 +15,16 @@ public final class FpsHudElement extends AbstractHudElement {
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
     MinecraftClient client = MinecraftClient.getInstance();
     int fps = client != null ? client.getCurrentFps() : 0;
-    int color = fps >= 120 ? 0xFF35D07F : fps >= 60 ? 0xFFFFB84D : 0xFFFF5A5A;
+    int color = fps >= 120 ? successColor() : fps >= 60 ? warningColor() : errorColor();
     drawPanel(context, "FPS: " + fps);
     if (client != null) {
-      context.drawTextWithShadow(client.textRenderer, "FPS: " + fps, (int) getBounds().x() + 8, (int) getBounds().y() + 8, color);
+      String label = style().compact ? String.valueOf(fps) : "FPS: " + fps;
+      context.drawTextWithShadow(client.textRenderer, label, (int) getBounds().x() + 8, (int) getBounds().y() + (style().labelsEnabled ? 18 : 8), color);
     }
+  }
+
+  @Override
+  public String settingsHint() {
+    return "FPS HUD: accent rengi, compact sayi modu ve dusuk FPS renk uyarisi.";
   }
 }

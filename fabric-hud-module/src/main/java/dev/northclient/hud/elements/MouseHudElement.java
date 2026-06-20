@@ -12,10 +12,20 @@ public final class MouseHudElement extends AbstractHudElement {
 
   @Override
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
-    drawPanel(context, "Mouse", 0xFF4DA3FF);
+    drawPanel(context, "Mouse");
     int x = (int) getBounds().x();
     int y = (int) getBounds().y();
+    if (style().compact) {
+      drawKey(context, "L", x + 10, y + 22, 48, 22, cps.isLeftDown());
+      drawKey(context, "R", x + 66, y + 22, 48, 22, cps.isRightDown());
+      return;
+    }
     drawKey(context, "LMB", x + 8, y + 24, 52, 24, cps.isLeftDown());
     drawKey(context, "RMB", x + 68, y + 24, 52, 24, cps.isRightDown());
+  }
+
+  @Override
+  public String settingsHint() {
+    return "Mouse HUD: LMB/RMB basili rengi, kompakt L/R modu ve animasyon.";
   }
 }

@@ -12,10 +12,19 @@ public final class CpsHudElement extends AbstractHudElement {
 
   @Override
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
-    drawPanel(context, "CPS", 0xFF4DA3FF);
+    drawPanel(context, "CPS");
     int x = (int) getBounds().x();
     int y = (int) getBounds().y();
-    drawText(context, "LMB  " + cps.leftCps() + " cps", x + 10, y + 24, cps.isLeftDown() ? 0xFF22C7FF : 0xFFEAF4FF);
-    drawText(context, "RMB  " + cps.rightCps() + " cps", x + 10, y + 40, cps.isRightDown() ? 0xFF22C7FF : 0xFF9FB4CC);
+    if (style().compact) {
+      drawText(context, cps.leftCps() + " | " + cps.rightCps(), x + 10, y + 24, cps.isLeftDown() || cps.isRightDown() ? pressedColor() : textColor());
+      return;
+    }
+    drawText(context, "LMB  " + cps.leftCps() + " cps", x + 10, y + 24, cps.isLeftDown() ? pressedColor() : textColor());
+    drawText(context, "RMB  " + cps.rightCps() + " cps", x + 10, y + 40, cps.isRightDown() ? pressedColor() : mutedColor());
+  }
+
+  @Override
+  public String settingsHint() {
+    return "CPS HUD: tiklayinca kullanilan basili renk ve compact L/R gorunumu.";
   }
 }

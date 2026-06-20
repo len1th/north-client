@@ -15,9 +15,14 @@ public final class PingHudElement extends AbstractHudElement {
   @Override
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
     int ping = readOwnPing();
-    int color = ping < 0 ? 0xFF9FB4CC : ping <= 80 ? 0xFF35D07F : ping <= 160 ? 0xFFFFB84D : 0xFFFF5A5A;
-    drawPanel(context, "Ping", color);
+    int color = ping < 0 ? mutedColor() : ping <= 80 ? successColor() : ping <= 160 ? warningColor() : errorColor();
+    drawPanel(context, "Ping");
     drawText(context, ping < 0 ? "local" : ping + " ms", (int) getBounds().x() + 10, (int) getBounds().y() + 24, color);
+  }
+
+  @Override
+  public String settingsHint() {
+    return "Ping HUD: kendi baglanti gecikmesini gosterir; sunucu avantaj verisi yok.";
   }
 
   private int readOwnPing() {

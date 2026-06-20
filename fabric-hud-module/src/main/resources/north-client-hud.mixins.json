@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "package": "dev.northclient.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "ItemEntityRendererMixin",
+    "PlayerEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

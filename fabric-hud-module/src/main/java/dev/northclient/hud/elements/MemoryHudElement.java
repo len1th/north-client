@@ -17,8 +17,13 @@ public final class MemoryHudElement extends AbstractHudElement {
     long max = runtime.maxMemory() / 1024L / 1024L;
     float ratio = max <= 0 ? 0.0f : used / (float) max;
     int color = ratio > 0.85f ? 0xFFFF5A5A : ratio > 0.65f ? 0xFFFFB84D : 0xFF35D07F;
-    drawPanel(context, "Memory", color);
-    drawText(context, used + " / " + max + " MB", (int) getBounds().x() + 10, (int) getBounds().y() + 24, 0xFFEAF4FF);
+    drawPanel(context, "Memory");
+    drawText(context, style().compact ? used + " MB" : used + " / " + max + " MB", (int) getBounds().x() + 10, (int) getBounds().y() + 24, textColor());
     drawBar(context, (int) getBounds().x() + 10, (int) getBounds().y() + 40, 136, 5, ratio, color);
+  }
+
+  @Override
+  public String settingsHint() {
+    return "Bellek HUD: bar ac/kapat, compact MB modu ve yuksek kullanim rengi.";
   }
 }

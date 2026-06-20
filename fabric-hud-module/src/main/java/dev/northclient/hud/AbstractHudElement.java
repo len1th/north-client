@@ -1,5 +1,6 @@
 package dev.northclient.hud;
 
+import dev.northclient.config.NorthClientSettings;
 import net.minecraft.client.gui.DrawContext;
 
 public abstract class AbstractHudElement implements HudElement {
@@ -10,6 +11,7 @@ public abstract class AbstractHudElement implements HudElement {
   private boolean enabled;
   private HudBounds bounds;
   private float scale = 1.0f;
+  private final HudStyle style = new HudStyle();
 
   protected AbstractHudElement(String id, String name, float x, float y, float width, float height, boolean enabled) {
     this.id = id;
@@ -61,10 +63,21 @@ public abstract class AbstractHudElement implements HudElement {
   }
 
   @Override
+  public HudStyle style() {
+    return style;
+  }
+
+  @Override
   public void resetDefault() {
     this.bounds = defaultBounds;
     this.enabled = defaultEnabled;
     this.scale = 1.0f;
+    this.style.reset();
+  }
+
+  @Override
+  public String settingsHint() {
+    return "Renk, stil, scale ve gorunurluk ayarlari bu HUD icin kaydedilir.";
   }
 
   @Override
@@ -73,7 +86,7 @@ public abstract class AbstractHudElement implements HudElement {
   }
 
   protected void drawPanel(DrawContext context, String text) {
-    drawPanel(context, text, 0xFF22C7FF);
+    drawPanel(context, text, style.accentColor);
   }
 
   protected void drawPanel(DrawContext context, String text, int accent) {
@@ -82,11 +95,15 @@ public abstract class AbstractHudElement implements HudElement {
     int y = (int) b.y();
     int width = (int) b.width();
     int height = (int) b.height();
-    context.fill(x + 2, y + 2, x + width + 2, y + height + 2, 0x55000000);
-    context.fill(x, y, x + width, y + height, 0xCC0E1522);
+    if (style.backgroundEnabled) {
+      context.fill(x + 2, y + 2, x + width + 2, y + height + 2, 0x55000000);
+      context.fill(x, y, x + width, y + height, style.backgroundColor);
+    }
     context.fill(x, y, x + width, y + 2, accent);
-    drawBorder(context, x, y, width, height, 0x9922314A);
-    drawText(context, text, x + 8, y + 8, 0xFFEAF4FF);
+    drawBorder(context, x, y, width, height, style.borderColor);
+    if (style.labelsEnabled) {
+      drawText(context, text, x + 8, y + 8, style.textColor);
+    }
   }
 
   protected void drawBorder(DrawContext context, int x, int y, int width, int height, int color) {
@@ -104,17 +121,54 @@ public abstract class AbstractHudElement implements HudElement {
   }
 
   protected void drawKey(DrawContext context, String label, int x, int y, int width, int height, boolean pressed) {
-    int bg = pressed ? 0xDD22C7FF : 0xAA131C2B;
-    int border = pressed ? 0xFFEAF4FF : 0x8822314A;
-    int text = pressed ? 0xFF07111D : 0xFFEAF4FF;
+    int bg = pressed ? style.pressedColor : soften(style.backgroundColor, 0xAA);
+    int border = pressed ? style.textColor : style.borderColor;
+    int text = pressed ? style.readablePressedTextColor() : style.textColor;
+    if (pressed && NorthClientSettings.hudAnimationsEnabled()) {
+      int pulse = (int) ((System.currentTimeMillis() / 80L) % 3L);
+      border = pulse == 0 ? 0xFFFFFFFF : border;
+    }
     context.fill(x, y, x + width, y + height, bg);
     drawBorder(context, x, y, width, height, border);
     drawText(context, label, x + Math.max(4, (width - label.length() * 6) / 2), y + Math.max(4, (height - 8) / 2), text);
   }
 
   protected void drawBar(DrawContext context, int x, int y, int width, int height, float value, int color) {
+    if (!style.barsEnabled) return;
     float clamped = Math.max(0.0f, Math.min(1.0f, value));
-    context.fill(x, y, x + width, y + height, 0xAA22314A);
+    context.fill(x, y, x + width, y + height, soften(style.borderColor, 0xAA));
     context.fill(x, y, x + Math.round(width * clamped), y + height, color);
+  }
+
+  protected int textColor() {
+    return style.textColor;
+  }
+
+  protected int mutedColor() {
+    return style.mutedTextColor;
+  }
+
+  protected int accentColor() {
+    return style.accentColor;
+  }
+
+  protected int pressedColor() {
+    return style.pressedColor;
+  }
+
+  protected int successColor() {
+    return 0xFF35D07F;
+  }
+
+  protected int warningColor() {
+    return 0xFFFFB84D;
+  }
+
+  protected int errorColor() {
+    return 0xFFFF5A5A;
+  }
+
+  protected int soften(int color, int alpha) {
+    return (alpha << 24) | (color & 0x00FFFFFF);
   }
 }

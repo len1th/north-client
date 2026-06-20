@@ -10,12 +10,12 @@ import net.minecraft.item.ItemStack;
 
 public final class ArmorHudElement extends AbstractHudElement {
   public ArmorHudElement() {
-    super("armor", "Zirh HUD", 1688, 420, 188, 120, true);
+    super("armor", "Zirh HUD", 320, 88, 150, 92, true);
   }
 
   @Override
   public void render(DrawContext context, float tickDelta, CpsTracker cps, KeystrokesTracker keys) {
-    drawPanel(context, "Armor durability", 0xFF35D07F);
+    drawPanel(context, style().compact ? "Armor" : "Armor durability");
     MinecraftClient client = MinecraftClient.getInstance();
     if (client == null || client.player == null) return;
     EquipmentSlot[] slots = new EquipmentSlot[] { EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET };
@@ -28,10 +28,17 @@ public final class ArmorHudElement extends AbstractHudElement {
       context.drawItem(stack, x, rowY);
       if (stack.isDamageable() && stack.getMaxDamage() > 0) {
         int pct = Math.max(0, 100 - Math.round((stack.getDamage() * 100f) / stack.getMaxDamage()));
-        int color = pct <= 25 ? 0xFFFF5A5A : 0xFFEAF4FF;
-        drawText(context, pct + "%", x + 24, rowY + 2, color);
-        drawBar(context, x + 62, rowY + 6, 82, 5, pct / 100.0f, pct <= 25 ? 0xFFFF5A5A : 0xFF35D07F);
+        int color = pct <= 25 ? errorColor() : textColor();
+        if (!style().compact) {
+          drawText(context, pct + "%", x + 24, rowY + 2, color);
+        }
+        drawBar(context, x + (style().compact ? 24 : 62), rowY + 6, style().compact ? 120 : 82, 5, pct / 100.0f, pct <= 25 ? errorColor() : successColor());
       }
     }
+  }
+
+  @Override
+  public String settingsHint() {
+    return "Zirh HUD: durability bar ac/kapat, compact ikon+bar modu ve dusuk dayaniklilik uyarisi.";
   }
 }
