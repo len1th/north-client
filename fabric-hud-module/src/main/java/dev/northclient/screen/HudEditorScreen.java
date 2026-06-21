@@ -20,6 +20,7 @@ public final class HudEditorScreen extends Screen {
   private double dragOffsetY;
   private boolean dragging;
   private int tab = TAB_HUD;
+  private boolean gridEnabled = true;
 
   public HudEditorScreen(HudManager hudManager) {
     super(Text.literal("North HUD Editor"));
@@ -38,11 +39,14 @@ public final class HudEditorScreen extends Screen {
     int rightWidth = Math.min(190, Math.max(164, width / 3));
     int rightX = width - rightWidth - 8;
     context.fill(0, 0, width, height, 0x66070B12);
+    if (gridEnabled) {
+      renderGrid(context);
+    }
     drawPanel(context, leftX, 8, leftWidth, height - 16, "HUD Listesi");
     drawPanel(context, rightX, 8, rightWidth, height - 16, "Ayarlar");
 
     context.drawCenteredTextWithShadow(textRenderer, "North HUD Editor", width / 2, 16, 0xFFEAF4FF);
-    context.drawTextWithShadow(textRenderer, "Right Shift ile ac/kapat - HUD elemanlarini surukle", leftX + leftWidth + 10, 36, 0xFF9FB4CC);
+    context.drawTextWithShadow(textRenderer, "Right Shift veya ana menu - surukle, hizala, kaydet", leftX + leftWidth + 10, 36, 0xFF9FB4CC);
     renderHudList(context, leftX, leftWidth);
     renderActions(context, leftX);
     renderTabs(context, rightX, rightWidth);
@@ -57,6 +61,10 @@ public final class HudEditorScreen extends Screen {
       HudBounds b = element.getBounds();
       int color = element == selected ? 0xFF22C7FF : 0x6622C7FF;
       drawBorder(context, (int) b.x(), (int) b.y(), (int) b.width(), (int) b.height(), color);
+      if (!element.isEnabled()) {
+        context.fill((int) b.x(), (int) b.y(), (int) (b.x() + b.width()), (int) (b.y() + b.height()), 0x66000000);
+        context.drawTextWithShadow(textRenderer, "OFF", (int) b.x() + 6, (int) b.y() + 6, 0xFFFF5A5A);
+      }
     }
     super.render(context, mouseX, mouseY, delta);
   }
@@ -123,9 +131,11 @@ public final class HudEditorScreen extends Screen {
   }
 
   private void renderActions(DrawContext context, int leftX) {
-    int actionsY = height - 42;
-    drawButton(context, leftX + 10, actionsY, 58, 22, "Save", 0xFF22314A, 0xFFEAF4FF);
-    drawButton(context, leftX + 76, actionsY, 78, 22, "Default", 0xFFFFB84D, 0xFFFFB84D);
+    int actionsY = height - 70;
+    drawButton(context, leftX + 10, actionsY, 58, 20, "Save", 0xFF22314A, 0xFFEAF4FF);
+    drawButton(context, leftX + 76, actionsY, 78, 20, gridEnabled ? "Grid ON" : "Grid OFF", gridEnabled ? 0xFF35D07F : 0xFF22314A, gridEnabled ? 0xFF35D07F : 0xFFEAF4FF);
+    drawButton(context, leftX + 10, actionsY + 28, 58, 20, "All ON", 0xFF35D07F, 0xFF35D07F);
+    drawButton(context, leftX + 76, actionsY + 28, 78, 20, "Default", 0xFFFFB84D, 0xFFFFB84D);
   }
 
   private void renderTabs(DrawContext context, int rightX, int rightWidth) {
@@ -154,6 +164,13 @@ public final class HudEditorScreen extends Screen {
     drawSetting(context, rightX, rightWidth, y += 18, "Label", style.labelsEnabled ? "ON" : "OFF", style.labelsEnabled ? 0xFF35D07F : 0xFFFF5A5A);
     drawSetting(context, rightX, rightWidth, y += 18, "Bar", style.barsEnabled ? "ON" : "OFF", style.barsEnabled ? 0xFF35D07F : 0xFFFF5A5A);
     drawSetting(context, rightX, rightWidth, y += 18, "Compact", style.compact ? "ON" : "OFF", style.compact ? 0xFF35D07F : 0xFFFF5A5A);
+    y += 22;
+    context.drawTextWithShadow(textRenderer, "Hizala", rightX + 12, y, 0xFF9FB4CC);
+    drawButton(context, rightX + 10, y + 14, 44, 18, "Sol", 0xFF22314A, 0xFFEAF4FF);
+    drawButton(context, rightX + 58, y + 14, 44, 18, "Orta", 0xFF22314A, 0xFFEAF4FF);
+    drawButton(context, rightX + 106, y + 14, 44, 18, "Sag", 0xFF22314A, 0xFFEAF4FF);
+    drawButton(context, rightX + 10, y + 36, 44, 18, "Ust", 0xFF22314A, 0xFFEAF4FF);
+    drawButton(context, rightX + 58, y + 36, 44, 18, "Alt", 0xFF22314A, 0xFFEAF4FF);
     drawButton(context, rightX + 10, height - 42, rightWidth - 20, 22, "HUD Default", 0xFFFFB84D, 0xFFFFB84D);
   }
 
@@ -197,12 +214,23 @@ public final class HudEditorScreen extends Screen {
   }
 
   private boolean handleActions(Click click, int leftX) {
-    int actionsY = height - 42;
-    if (inside(click, leftX + 10, actionsY, 58, 22)) {
+    int actionsY = height - 70;
+    if (inside(click, leftX + 10, actionsY, 58, 20)) {
       hudManager.save();
       return true;
     }
-    if (inside(click, leftX + 76, actionsY, 78, 22)) {
+    if (inside(click, leftX + 76, actionsY, 78, 20)) {
+      gridEnabled = !gridEnabled;
+      return true;
+    }
+    if (inside(click, leftX + 10, actionsY + 28, 58, 20)) {
+      for (HudElement element : hudManager.elements()) {
+        element.setEnabled(true);
+      }
+      hudManager.save();
+      return true;
+    }
+    if (inside(click, leftX + 76, actionsY + 28, 78, 20)) {
       for (HudElement element : hudManager.elements()) {
         element.resetDefault();
       }
@@ -250,12 +278,32 @@ public final class HudEditorScreen extends Screen {
       style.barsEnabled = !style.barsEnabled;
     } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
       style.compact = !style.compact;
+    } else if (handleAlignment(click, rightX, y + 22)) {
+      // handled by helper
     } else if (inside(click, rightX + 10, height - 42, rightWidth - 20, 22)) {
       selected.resetDefault();
     } else {
       return false;
     }
     hudManager.save();
+    return true;
+  }
+
+  private boolean handleAlignment(Click click, int rightX, int y) {
+    HudBounds b = selected.getBounds();
+    if (inside(click, rightX + 10, y + 14, 44, 18)) {
+      selected.setPosition(8, b.y());
+    } else if (inside(click, rightX + 58, y + 14, 44, 18)) {
+      selected.setPosition(snap((width - b.width()) / 2f), b.y());
+    } else if (inside(click, rightX + 106, y + 14, 44, 18)) {
+      selected.setPosition(snap(width - b.width() - 8), b.y());
+    } else if (inside(click, rightX + 10, y + 36, 44, 18)) {
+      selected.setPosition(b.x(), 8);
+    } else if (inside(click, rightX + 58, y + 36, 44, 18)) {
+      selected.setPosition(b.x(), snap(height - b.height() - 8));
+    } else {
+      return false;
+    }
     return true;
   }
 
@@ -279,6 +327,15 @@ public final class HudEditorScreen extends Screen {
     drawBorder(context, x, y, width, height, 0x8822314A);
     context.fill(x, y, x + width, y + 2, 0xFF22C7FF);
     context.drawTextWithShadow(textRenderer, title, x + 10, y + 10, 0xFF22C7FF);
+  }
+
+  private void renderGrid(DrawContext context) {
+    for (int x = 0; x < width; x += 16) {
+      context.fill(x, 0, x + 1, height, 0x1622C7FF);
+    }
+    for (int y = 0; y < height; y += 16) {
+      context.fill(0, y, width, y + 1, 0x1622C7FF);
+    }
   }
 
   private void drawButton(DrawContext context, int x, int y, int width, int height, String text, int border, int textColor) {
@@ -327,5 +384,9 @@ public final class HudEditorScreen extends Screen {
 
   private String trimName(String name, int max) {
     return name.length() <= max ? name : name.substring(0, Math.max(1, max - 1)) + ".";
+  }
+
+  private float snap(float value) {
+    return Math.round(value / 8f) * 8f;
   }
 }
