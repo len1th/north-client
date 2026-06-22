@@ -22,6 +22,12 @@ public final class HudEditorScreen extends Screen {
   private int tab = TAB_HUD;
   private boolean gridEnabled = false;
   private boolean advancedOpen = false;
+  private int leftPanelX = 8;
+  private int leftPanelWidth = 136;
+  private int rightPanelX = -1;
+  private int rightPanelWidth = 166;
+  private int panelDrag = 0;
+  private int panelResize = 0;
 
   public HudEditorScreen(HudManager hudManager) {
     super(Text.literal("North HUD Editor"));
@@ -35,10 +41,11 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-    int leftX = 8;
-    int leftWidth = Math.min(136, Math.max(118, width / 5));
-    int rightWidth = Math.min(166, Math.max(148, width / 4));
-    int rightX = width - rightWidth - 8;
+    ensurePanelLayout();
+    int leftX = leftPanelX;
+    int leftWidth = leftPanelWidth;
+    int rightWidth = rightPanelWidth;
+    int rightX = rightPanelX;
     context.fill(0, 0, width, height, 0x66070B12);
     if (gridEnabled) {
       renderGrid(context);
@@ -60,6 +67,7 @@ public final class HudEditorScreen extends Screen {
 
     drawPanel(context, leftX, 8, leftWidth, height - 16, "HUD");
     drawPanel(context, rightX, 8, rightWidth, height - 16, tab == TAB_CLIENT ? "Client" : "Secili");
+    drawPanelHandles(context, leftX, leftWidth, rightX, rightWidth);
     renderHudList(context, leftX, leftWidth);
     renderActions(context, leftX, leftWidth);
     renderTabs(context, rightX, rightWidth);
@@ -73,11 +81,13 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public boolean mouseClicked(Click click, boolean doubled) {
-    int leftX = 8;
-    int leftWidth = Math.min(136, Math.max(118, width / 5));
-    int rightWidth = Math.min(166, Math.max(148, width / 4));
-    int rightX = width - rightWidth - 8;
+    ensurePanelLayout();
+    int leftX = leftPanelX;
+    int leftWidth = leftPanelWidth;
+    int rightWidth = rightPanelWidth;
+    int rightX = rightPanelX;
 
+    if (handlePanelChrome(click, leftX, leftWidth, rightX, rightWidth)) return true;
     if (handleTabs(click, rightX)) return true;
     if (handleActions(click, leftX)) return true;
     if (handleHudList(click, leftX, leftWidth)) return true;
@@ -98,6 +108,25 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+    if (panelDrag != 0) {
+      int newX = (int) Math.round(click.x() - dragOffsetX);
+      if (panelDrag == 1) {
+        leftPanelX = clamp(newX, 0, Math.max(0, width - leftPanelWidth));
+      } else {
+        rightPanelX = clamp(newX, 0, Math.max(0, width - rightPanelWidth));
+      }
+      return true;
+    }
+    if (panelResize != 0) {
+      if (panelResize == 1) {
+        leftPanelWidth = clamp((int) Math.round(click.x() - leftPanelX), 92, Math.max(92, width - leftPanelX));
+      } else {
+        int rightEdge = rightPanelX + rightPanelWidth;
+        rightPanelWidth = clamp((int) Math.round(rightEdge - click.x()), 116, Math.max(116, rightEdge));
+        rightPanelX = rightEdge - rightPanelWidth;
+      }
+      return true;
+    }
     if (selected != null && dragging) {
       HudBounds b = selected.getBounds();
       float x = (float) Math.max(0, Math.min(width - b.width(), click.x() - dragOffsetX));
@@ -110,6 +139,11 @@ public final class HudEditorScreen extends Screen {
 
   @Override
   public boolean mouseReleased(Click click) {
+    if (panelDrag != 0 || panelResize != 0) {
+      panelDrag = 0;
+      panelResize = 0;
+      return true;
+    }
     if (dragging) {
       dragging = false;
       hudManager.save();
@@ -225,8 +259,32 @@ public final class HudEditorScreen extends Screen {
     return false;
   }
 
+  private boolean handlePanelChrome(Click click, int leftX, int leftWidth, int rightX, int rightWidth) {
+    if (inside(click, leftX + leftWidth - 6, 8, 6, height - 16)) {
+      panelResize = 1;
+      return true;
+    }
+    if (inside(click, rightX, 8, 6, height - 16)) {
+      panelResize = 2;
+      return true;
+    }
+    if (inside(click, leftX, 8, leftWidth, 24)) {
+      panelDrag = 1;
+      dragOffsetX = click.x() - leftX;
+      dragOffsetY = click.y() - 8;
+      return true;
+    }
+    if (inside(click, rightX, 8, rightWidth, 24)) {
+      panelDrag = 2;
+      dragOffsetX = click.x() - rightX;
+      dragOffsetY = click.y() - 8;
+      return true;
+    }
+    return false;
+  }
+
   private boolean handleActions(Click click, int leftX) {
-    int leftWidth = Math.min(136, Math.max(118, width / 5));
+    int leftWidth = leftPanelWidth;
     int actionsY = height - 56;
     int buttonWidth = (leftWidth - 28) / 2;
     if (inside(click, leftX + 10, actionsY, buttonWidth, 18)) {
@@ -358,6 +416,31 @@ public final class HudEditorScreen extends Screen {
     context.drawTextWithShadow(textRenderer, title, x + 10, y + 10, 0xFF22C7FF);
   }
 
+  private void drawPanelHandles(DrawContext context, int leftX, int leftWidth, int rightX, int rightWidth) {
+    context.drawTextWithShadow(textRenderer, "<>", leftX + leftWidth - 20, 18, 0xFF9FB4CC);
+    context.fill(leftX + leftWidth - 4, 32, leftX + leftWidth - 2, height - 24, 0x6622C7FF);
+    context.drawTextWithShadow(textRenderer, "<>", rightX + rightWidth - 20, 18, 0xFF9FB4CC);
+    context.fill(rightX + 2, 32, rightX + 4, height - 24, 0x6622C7FF);
+  }
+
+  private void ensurePanelLayout() {
+    int defaultLeftWidth = Math.min(136, Math.max(118, width / 5));
+    int defaultRightWidth = Math.min(166, Math.max(148, width / 4));
+    if (leftPanelWidth <= 0) {
+      leftPanelWidth = defaultLeftWidth;
+    }
+    if (rightPanelWidth <= 0) {
+      rightPanelWidth = defaultRightWidth;
+    }
+    if (rightPanelX < 0) {
+      rightPanelX = width - rightPanelWidth - 8;
+    }
+    leftPanelWidth = clamp(leftPanelWidth, 92, Math.max(92, width));
+    rightPanelWidth = clamp(rightPanelWidth, 116, Math.max(116, width));
+    leftPanelX = clamp(leftPanelX, 0, Math.max(0, width - leftPanelWidth));
+    rightPanelX = clamp(rightPanelX, 0, Math.max(0, width - rightPanelWidth));
+  }
+
   private void renderGrid(DrawContext context) {
     for (int x = 0; x < width; x += 16) {
       context.fill(x, 0, x + 1, height, 0x1622C7FF);
@@ -422,5 +505,9 @@ public final class HudEditorScreen extends Screen {
 
   private float snap(float value) {
     return Math.round(value / 8f) * 8f;
+  }
+
+  private int clamp(int value, int min, int max) {
+    return Math.max(min, Math.min(max, value));
   }
 }
