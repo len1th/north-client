@@ -20,8 +20,8 @@ public abstract class TitleScreenMixin extends Screen {
 
   @Inject(method = "init", at = @At("TAIL"))
   private void northclient$addHudEditorButton(CallbackInfo ci) {
-    addDrawableChild(ButtonWidget.builder(Text.literal("HUD Duzenle"), button ->
+    addDrawableChild(ButtonWidget.builder(Text.literal("HUD Olustur"), button ->
       NorthClientMod.openHudEditor(MinecraftClient.getInstance())
-    ).dimensions(width / 2 - 100, height / 4 + 132, 98, 20).build());
+    ).dimensions(width - 112, 8, 104, 20).build());
   }
 }

@@ -20,7 +20,8 @@ public final class HudEditorScreen extends Screen {
   private double dragOffsetY;
   private boolean dragging;
   private int tab = TAB_HUD;
-  private boolean gridEnabled = true;
+  private boolean gridEnabled = false;
+  private boolean advancedOpen = false;
 
   public HudEditorScreen(HudManager hudManager) {
     super(Text.literal("North HUD Editor"));
@@ -42,11 +43,11 @@ public final class HudEditorScreen extends Screen {
     if (gridEnabled) {
       renderGrid(context);
     }
-    drawPanel(context, leftX, 8, leftWidth, height - 16, "HUD Listesi");
-    drawPanel(context, rightX, 8, rightWidth, height - 16, "Ayarlar");
+    drawPanel(context, leftX, 8, leftWidth, height - 16, "HUD");
+    drawPanel(context, rightX, 8, rightWidth, height - 16, tab == TAB_CLIENT ? "Client" : "Secili HUD");
 
     context.drawCenteredTextWithShadow(textRenderer, "North HUD Editor", width / 2, 16, 0xFFEAF4FF);
-    context.drawTextWithShadow(textRenderer, "Right Shift veya ana menu - surukle, hizala, kaydet", leftX + leftWidth + 10, 36, 0xFF9FB4CC);
+    context.drawTextWithShadow(textRenderer, "HUD'u ekrandan surukle. Sag panelden ince ayar yap.", leftX + leftWidth + 10, 36, 0xFF9FB4CC);
     renderHudList(context, leftX, leftWidth);
     renderActions(context, leftX);
     renderTabs(context, rightX, rightWidth);
@@ -57,13 +58,14 @@ public final class HudEditorScreen extends Screen {
     }
 
     for (HudElement element : hudManager.elements()) {
-      element.renderPreview(context, delta);
       HudBounds b = element.getBounds();
-      int color = element == selected ? 0xFF22C7FF : 0x6622C7FF;
+      if (element.isEnabled()) {
+        element.renderPreview(context, delta);
+      }
+      int color = element == selected ? 0xFF22C7FF : (element.isEnabled() ? 0x6622C7FF : 0x44FF5A5A);
       drawBorder(context, (int) b.x(), (int) b.y(), (int) b.width(), (int) b.height(), color);
       if (!element.isEnabled()) {
-        context.fill((int) b.x(), (int) b.y(), (int) (b.x() + b.width()), (int) (b.y() + b.height()), 0x66000000);
-        context.drawTextWithShadow(textRenderer, "OFF", (int) b.x() + 6, (int) b.y() + 6, 0xFFFF5A5A);
+        context.drawTextWithShadow(textRenderer, "OFF", (int) b.x() + 4, (int) b.y() + 4, 0xFFFF5A5A);
       }
     }
     super.render(context, mouseX, mouseY, delta);
@@ -117,14 +119,14 @@ public final class HudEditorScreen extends Screen {
   }
 
   private void renderHudList(DrawContext context, int leftX, int leftWidth) {
-    context.drawTextWithShadow(textRenderer, "ON   HUD                         R", leftX + 10, 32, 0xFF9FB4CC);
+    context.drawTextWithShadow(textRenderer, "Durum  Eleman                 Sifirla", leftX + 10, 32, 0xFF9FB4CC);
     int row = 0;
     for (HudElement element : hudManager.elements()) {
       int y = 50 + row * 16;
       int color = element.isEnabled() ? 0xFFEAF4FF : 0xFF56687D;
       context.fill(leftX + 8, y - 2, leftX + leftWidth - 8, y + 12, element == selected ? 0x3322C7FF : 0x00000000);
       context.drawTextWithShadow(textRenderer, element.isEnabled() ? "ON " : "OFF", leftX + 10, y, element.isEnabled() ? 0xFF35D07F : 0xFFFF5A5A);
-      context.drawTextWithShadow(textRenderer, trimName(element.getName(), 14), leftX + 42, y, color);
+      context.drawTextWithShadow(textRenderer, trimName(element.getName(), 13), leftX + 42, y, color);
       context.drawTextWithShadow(textRenderer, "R", leftX + leftWidth - 22, y, 0xFFFFB84D);
       row++;
     }
@@ -153,24 +155,33 @@ public final class HudEditorScreen extends Screen {
     HudStyle style = selected.style();
     int y = 56;
     context.drawTextWithShadow(textRenderer, trimName(selected.getName(), 19), rightX + 12, y, 0xFFEAF4FF);
-    context.drawTextWithShadow(textRenderer, trimName(selected.settingsHint(), 26), rightX + 12, y + 14, 0xFF9FB4CC);
+    context.drawTextWithShadow(textRenderer, "Konum icin ekranda surukle.", rightX + 12, y + 14, 0xFF9FB4CC);
     y += 34;
-    drawSetting(context, rightX, rightWidth, y, "Aktif", selected.isEnabled() ? "ON" : "OFF", selected.isEnabled() ? 0xFF35D07F : 0xFFFF5A5A);
-    drawSetting(context, rightX, rightWidth, y += 18, "Scale", String.format("%.2f  - / +", selected.getScale()), 0xFFEAF4FF);
-    drawColorSetting(context, rightX, rightWidth, y += 18, "Accent", style.accentColor);
-    drawColorSetting(context, rightX, rightWidth, y += 18, "Basili", style.pressedColor);
-    drawColorSetting(context, rightX, rightWidth, y += 18, "Yazi", style.textColor);
-    drawSetting(context, rightX, rightWidth, y += 18, "Arka plan", style.backgroundEnabled ? "ON" : "OFF", style.backgroundEnabled ? 0xFF35D07F : 0xFFFF5A5A);
-    drawSetting(context, rightX, rightWidth, y += 18, "Label", style.labelsEnabled ? "ON" : "OFF", style.labelsEnabled ? 0xFF35D07F : 0xFFFF5A5A);
-    drawSetting(context, rightX, rightWidth, y += 18, "Bar", style.barsEnabled ? "ON" : "OFF", style.barsEnabled ? 0xFF35D07F : 0xFFFF5A5A);
-    drawSetting(context, rightX, rightWidth, y += 18, "Compact", style.compact ? "ON" : "OFF", style.compact ? 0xFF35D07F : 0xFFFF5A5A);
-    y += 22;
-    context.drawTextWithShadow(textRenderer, "Hizala", rightX + 12, y, 0xFF9FB4CC);
+    drawSection(context, rightX, y, "Temel");
+    y += 14;
+    drawSetting(context, rightX, rightWidth, y, "Gorunur", selected.isEnabled() ? "ON" : "OFF", selected.isEnabled() ? 0xFF35D07F : 0xFFFF5A5A);
+    drawSetting(context, rightX, rightWidth, y += 20, "Boyut", String.format("%.2f  - / +", selected.getScale()), 0xFFEAF4FF);
+    y += 28;
+    drawSection(context, rightX, y, "Hizala");
     drawButton(context, rightX + 10, y + 14, 44, 18, "Sol", 0xFF22314A, 0xFFEAF4FF);
     drawButton(context, rightX + 58, y + 14, 44, 18, "Orta", 0xFF22314A, 0xFFEAF4FF);
     drawButton(context, rightX + 106, y + 14, 44, 18, "Sag", 0xFF22314A, 0xFFEAF4FF);
     drawButton(context, rightX + 10, y + 36, 44, 18, "Ust", 0xFF22314A, 0xFFEAF4FF);
     drawButton(context, rightX + 58, y + 36, 44, 18, "Alt", 0xFF22314A, 0xFFEAF4FF);
+    y += 66;
+    drawButton(context, rightX + 10, y, rightWidth - 20, 20, advancedOpen ? "Gelismis -" : "Gelismis +", 0xFF22314A, 0xFFEAF4FF);
+    if (advancedOpen) {
+      y += 30;
+      drawSection(context, rightX, y, "Stil");
+      y += 14;
+      drawColorSetting(context, rightX, rightWidth, y, "Accent", style.accentColor);
+      drawColorSetting(context, rightX, rightWidth, y += 20, "Basili", style.pressedColor);
+      drawColorSetting(context, rightX, rightWidth, y += 20, "Yazi", style.textColor);
+      drawSetting(context, rightX, rightWidth, y += 20, "Arka plan", style.backgroundEnabled ? "ON" : "OFF", style.backgroundEnabled ? 0xFF35D07F : 0xFFFF5A5A);
+      drawSetting(context, rightX, rightWidth, y += 20, "Label", style.labelsEnabled ? "ON" : "OFF", style.labelsEnabled ? 0xFF35D07F : 0xFFFF5A5A);
+      drawSetting(context, rightX, rightWidth, y += 20, "Bar", style.barsEnabled ? "ON" : "OFF", style.barsEnabled ? 0xFF35D07F : 0xFFFF5A5A);
+      drawSetting(context, rightX, rightWidth, y += 20, "Compact", style.compact ? "ON" : "OFF", style.compact ? 0xFF35D07F : 0xFFFF5A5A);
+    }
     drawButton(context, rightX + 10, height - 42, rightWidth - 20, 22, "HUD Default", 0xFFFFB84D, 0xFFFFB84D);
   }
 
@@ -255,30 +266,22 @@ public final class HudEditorScreen extends Screen {
 
   private boolean handleHudSettings(Click click, int rightX, int rightWidth) {
     if (selected == null) return false;
-    HudStyle style = selected.style();
-    int y = 90;
-    if (inside(click, rightX + 10, y, rightWidth - 20, 15)) {
+    int basicY = 104;
+    int scaleY = 124;
+    int alignY = 152;
+    int advancedToggleY = 218;
+    int advancedY = 262;
+    if (inside(click, rightX + 10, basicY, rightWidth - 20, 15)) {
       selected.setEnabled(!selected.isEnabled());
-    } else if (inside(click, rightX + 10, y += 18, (rightWidth - 24) / 2, 15)) {
+    } else if (inside(click, rightX + 10, scaleY, (rightWidth - 24) / 2, 15)) {
       selected.setScale(selected.getScale() - 0.05f);
-    } else if (inside(click, rightX + 12 + (rightWidth - 24) / 2, y, (rightWidth - 24) / 2, 15)) {
+    } else if (inside(click, rightX + 12 + (rightWidth - 24) / 2, scaleY, (rightWidth - 24) / 2, 15)) {
       selected.setScale(selected.getScale() + 0.05f);
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.accentColor = style.nextPaletteColor(style.accentColor);
-      style.barColor = style.accentColor;
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.pressedColor = style.nextPaletteColor(style.pressedColor);
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.textColor = style.nextPaletteColor(style.textColor);
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.backgroundEnabled = !style.backgroundEnabled;
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.labelsEnabled = !style.labelsEnabled;
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.barsEnabled = !style.barsEnabled;
-    } else if (inside(click, rightX + 10, y += 18, rightWidth - 20, 15)) {
-      style.compact = !style.compact;
-    } else if (handleAlignment(click, rightX, y + 22)) {
+    } else if (handleAlignment(click, rightX, alignY)) {
+      // handled by helper
+    } else if (inside(click, rightX + 10, advancedToggleY, rightWidth - 20, 20)) {
+      advancedOpen = !advancedOpen;
+    } else if (advancedOpen && handleAdvancedHudSettings(click, rightX, rightWidth, advancedY)) {
       // handled by helper
     } else if (inside(click, rightX + 10, height - 42, rightWidth - 20, 22)) {
       selected.resetDefault();
@@ -286,6 +289,29 @@ public final class HudEditorScreen extends Screen {
       return false;
     }
     hudManager.save();
+    return true;
+  }
+
+  private boolean handleAdvancedHudSettings(Click click, int rightX, int rightWidth, int y) {
+    HudStyle style = selected.style();
+    if (inside(click, rightX + 10, y, rightWidth - 20, 15)) {
+      style.accentColor = style.nextPaletteColor(style.accentColor);
+      style.barColor = style.accentColor;
+    } else if (inside(click, rightX + 10, y += 20, rightWidth - 20, 15)) {
+      style.pressedColor = style.nextPaletteColor(style.pressedColor);
+    } else if (inside(click, rightX + 10, y += 20, rightWidth - 20, 15)) {
+      style.textColor = style.nextPaletteColor(style.textColor);
+    } else if (inside(click, rightX + 10, y += 20, rightWidth - 20, 15)) {
+      style.backgroundEnabled = !style.backgroundEnabled;
+    } else if (inside(click, rightX + 10, y += 20, rightWidth - 20, 15)) {
+      style.labelsEnabled = !style.labelsEnabled;
+    } else if (inside(click, rightX + 10, y += 20, rightWidth - 20, 15)) {
+      style.barsEnabled = !style.barsEnabled;
+    } else if (inside(click, rightX + 10, y += 20, rightWidth - 20, 15)) {
+      style.compact = !style.compact;
+    } else {
+      return false;
+    }
     return true;
   }
 
@@ -349,6 +375,11 @@ public final class HudEditorScreen extends Screen {
     drawBorder(context, rightX + 10, y, rightWidth - 20, 15, 0x5522314A);
     context.drawTextWithShadow(textRenderer, label, rightX + 16, y + 4, 0xFF9FB4CC);
     context.drawTextWithShadow(textRenderer, value, rightX + rightWidth - 64, y + 4, valueColor);
+  }
+
+  private void drawSection(DrawContext context, int rightX, int y, String title) {
+    context.drawTextWithShadow(textRenderer, title, rightX + 12, y, 0xFF22C7FF);
+    context.fill(rightX + 54, y + 4, rightX + 150, y + 5, 0x5522C7FF);
   }
 
   private void drawColorSetting(DrawContext context, int rightX, int rightWidth, int y, String label, int color) {
