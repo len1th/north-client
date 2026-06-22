@@ -36,37 +36,37 @@ public final class HudEditorScreen extends Screen {
   @Override
   public void render(DrawContext context, int mouseX, int mouseY, float delta) {
     int leftX = 8;
-    int leftWidth = 158;
-    int rightWidth = Math.min(190, Math.max(164, width / 3));
+    int leftWidth = Math.min(136, Math.max(118, width / 5));
+    int rightWidth = Math.min(166, Math.max(148, width / 4));
     int rightX = width - rightWidth - 8;
     context.fill(0, 0, width, height, 0x66070B12);
     if (gridEnabled) {
       renderGrid(context);
     }
-    drawPanel(context, leftX, 8, leftWidth, height - 16, "HUD");
-    drawPanel(context, rightX, 8, rightWidth, height - 16, tab == TAB_CLIENT ? "Client" : "Secili HUD");
 
     context.drawCenteredTextWithShadow(textRenderer, "North HUD Editor", width / 2, 16, 0xFFEAF4FF);
-    context.drawTextWithShadow(textRenderer, "HUD'u ekrandan surukle. Sag panelden ince ayar yap.", leftX + leftWidth + 10, 36, 0xFF9FB4CC);
-    renderHudList(context, leftX, leftWidth);
-    renderActions(context, leftX);
-    renderTabs(context, rightX, rightWidth);
-    if (tab == TAB_CLIENT) {
-      renderClientSettings(context, rightX, rightWidth);
-    } else {
-      renderHudSettings(context, rightX, rightWidth);
-    }
+    context.drawTextWithShadow(textRenderer, "Surukle, hizala, kaydet", leftX + leftWidth + 10, 36, 0xFF9FB4CC);
 
     for (HudElement element : hudManager.elements()) {
       HudBounds b = element.getBounds();
       if (element.isEnabled()) {
         element.renderPreview(context, delta);
       }
-      int color = element == selected ? 0xFF22C7FF : (element.isEnabled() ? 0x6622C7FF : 0x44FF5A5A);
-      drawBorder(context, (int) b.x(), (int) b.y(), (int) b.width(), (int) b.height(), color);
-      if (!element.isEnabled()) {
-        context.drawTextWithShadow(textRenderer, "OFF", (int) b.x() + 4, (int) b.y() + 4, 0xFFFF5A5A);
+      if (element.isEnabled() || element == selected) {
+        int color = element == selected ? 0xFF22C7FF : 0x6622C7FF;
+        drawBorder(context, (int) b.x(), (int) b.y(), (int) b.width(), (int) b.height(), color);
       }
+    }
+
+    drawPanel(context, leftX, 8, leftWidth, height - 16, "HUD");
+    drawPanel(context, rightX, 8, rightWidth, height - 16, tab == TAB_CLIENT ? "Client" : "Secili");
+    renderHudList(context, leftX, leftWidth);
+    renderActions(context, leftX, leftWidth);
+    renderTabs(context, rightX, rightWidth);
+    if (tab == TAB_CLIENT) {
+      renderClientSettings(context, rightX, rightWidth);
+    } else {
+      renderHudSettings(context, rightX, rightWidth);
     }
     super.render(context, mouseX, mouseY, delta);
   }
@@ -74,8 +74,8 @@ public final class HudEditorScreen extends Screen {
   @Override
   public boolean mouseClicked(Click click, boolean doubled) {
     int leftX = 8;
-    int leftWidth = 158;
-    int rightWidth = Math.min(190, Math.max(164, width / 3));
+    int leftWidth = Math.min(136, Math.max(118, width / 5));
+    int rightWidth = Math.min(166, Math.max(148, width / 4));
     int rightX = width - rightWidth - 8;
 
     if (handleTabs(click, rightX)) return true;
@@ -119,25 +119,26 @@ public final class HudEditorScreen extends Screen {
   }
 
   private void renderHudList(DrawContext context, int leftX, int leftWidth) {
-    context.drawTextWithShadow(textRenderer, "Durum  Eleman                 Sifirla", leftX + 10, 32, 0xFF9FB4CC);
+    context.drawTextWithShadow(textRenderer, "ON  HUD              R", leftX + 10, 32, 0xFF9FB4CC);
     int row = 0;
     for (HudElement element : hudManager.elements()) {
-      int y = 50 + row * 16;
+      int y = 48 + row * 13;
       int color = element.isEnabled() ? 0xFFEAF4FF : 0xFF56687D;
-      context.fill(leftX + 8, y - 2, leftX + leftWidth - 8, y + 12, element == selected ? 0x3322C7FF : 0x00000000);
+      context.fill(leftX + 8, y - 2, leftX + leftWidth - 8, y + 10, element == selected ? 0x3322C7FF : 0x00000000);
       context.drawTextWithShadow(textRenderer, element.isEnabled() ? "ON " : "OFF", leftX + 10, y, element.isEnabled() ? 0xFF35D07F : 0xFFFF5A5A);
-      context.drawTextWithShadow(textRenderer, trimName(element.getName(), 13), leftX + 42, y, color);
+      context.drawTextWithShadow(textRenderer, trimName(element.getName(), 9), leftX + 38, y, color);
       context.drawTextWithShadow(textRenderer, "R", leftX + leftWidth - 22, y, 0xFFFFB84D);
       row++;
     }
   }
 
-  private void renderActions(DrawContext context, int leftX) {
-    int actionsY = height - 70;
-    drawButton(context, leftX + 10, actionsY, 58, 20, "Save", 0xFF22314A, 0xFFEAF4FF);
-    drawButton(context, leftX + 76, actionsY, 78, 20, gridEnabled ? "Grid ON" : "Grid OFF", gridEnabled ? 0xFF35D07F : 0xFF22314A, gridEnabled ? 0xFF35D07F : 0xFFEAF4FF);
-    drawButton(context, leftX + 10, actionsY + 28, 58, 20, "All ON", 0xFF35D07F, 0xFF35D07F);
-    drawButton(context, leftX + 76, actionsY + 28, 78, 20, "Default", 0xFFFFB84D, 0xFFFFB84D);
+  private void renderActions(DrawContext context, int leftX, int leftWidth) {
+    int actionsY = height - 56;
+    int buttonWidth = (leftWidth - 28) / 2;
+    drawButton(context, leftX + 10, actionsY, buttonWidth, 18, "Save", 0xFF22314A, 0xFFEAF4FF);
+    drawButton(context, leftX + 18 + buttonWidth, actionsY, buttonWidth, 18, gridEnabled ? "Grid" : "NoGrid", gridEnabled ? 0xFF35D07F : 0xFF22314A, gridEnabled ? 0xFF35D07F : 0xFFEAF4FF);
+    drawButton(context, leftX + 10, actionsY + 24, buttonWidth, 18, "All", 0xFF35D07F, 0xFF35D07F);
+    drawButton(context, leftX + 18 + buttonWidth, actionsY + 24, buttonWidth, 18, "Reset", 0xFFFFB84D, 0xFFFFB84D);
   }
 
   private void renderTabs(DrawContext context, int rightX, int rightWidth) {
@@ -225,23 +226,25 @@ public final class HudEditorScreen extends Screen {
   }
 
   private boolean handleActions(Click click, int leftX) {
-    int actionsY = height - 70;
-    if (inside(click, leftX + 10, actionsY, 58, 20)) {
+    int leftWidth = Math.min(136, Math.max(118, width / 5));
+    int actionsY = height - 56;
+    int buttonWidth = (leftWidth - 28) / 2;
+    if (inside(click, leftX + 10, actionsY, buttonWidth, 18)) {
       hudManager.save();
       return true;
     }
-    if (inside(click, leftX + 76, actionsY, 78, 20)) {
+    if (inside(click, leftX + 18 + buttonWidth, actionsY, buttonWidth, 18)) {
       gridEnabled = !gridEnabled;
       return true;
     }
-    if (inside(click, leftX + 10, actionsY + 28, 58, 20)) {
+    if (inside(click, leftX + 10, actionsY + 24, buttonWidth, 18)) {
       for (HudElement element : hudManager.elements()) {
         element.setEnabled(true);
       }
       hudManager.save();
       return true;
     }
-    if (inside(click, leftX + 76, actionsY + 28, 78, 20)) {
+    if (inside(click, leftX + 18 + buttonWidth, actionsY + 24, buttonWidth, 18)) {
       for (HudElement element : hudManager.elements()) {
         element.resetDefault();
       }
