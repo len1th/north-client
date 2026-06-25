@@ -17,7 +17,7 @@
     { "name": "Krypton", "version": "latest-compatible", "required": true, "source": "modrinth", "projectId": "krypton", "sha256": "", "fileName": "krypton.jar", "side": "client", "estimatedSizeMb": 1 },
     { "name": "Dynamic FPS", "version": "latest-compatible", "required": true, "source": "modrinth", "projectId": "dynamic-fps", "sha256": "", "fileName": "dynamic-fps.jar", "side": "client", "estimatedSizeMb": 1 },
     { "name": "Debugify", "version": "latest-compatible", "required": true, "source": "modrinth", "projectId": "debugify", "sha256": "", "fileName": "debugify.jar", "side": "client", "estimatedSizeMb": 1 },
-    { "name": "North Client HUD Module", "version": "1.0.10", "required": true, "source": "local-or-release", "projectId": "north-client-hud", "sha256": "19ab315adf3eb9e032403629a6ee2ce68bcc4b171d3b67b6a447be665580c05c", "fileName": "north-client-hud-1.0.10.jar", "downloadUrl": "https://github.com/len1th/north-client/releases/download/north-client-hud-1.0.10/north-client-hud-1.0.10.jar", "javaRelease": 21, "classFileMajor": 65, "side": "client", "estimatedSizeMb": 1 },
+    { "name": "North Client HUD Module", "version": "1.0.11", "required": true, "source": "local-or-release", "projectId": "north-client-hud", "sha256": "c193f67523c921dc06b805772e86b78d32aab894a0b854eacc561da21950d561", "fileName": "north-client-hud-1.0.11.jar", "downloadUrl": "https://github.com/len1th/north-client/releases/download/north-client-hud-1.0.11/north-client-hud-1.0.11.jar", "javaRelease": 21, "classFileMajor": 65, "side": "client", "estimatedSizeMb": 1 },
     { "name": "ModernFix", "version": "latest-compatible", "required": false, "source": "modrinth", "projectId": "modernfix", "sha256": "", "fileName": "modernfix.jar", "side": "client", "estimatedSizeMb": 2 },
     { "name": "MoreCulling", "version": "latest-compatible", "required": false, "source": "modrinth", "projectId": "moreculling", "sha256": "", "fileName": "moreculling.jar", "side": "client", "estimatedSizeMb": 1 },
     { "name": "Noisium", "version": "latest-compatible", "required": false, "source": "modrinth", "projectId": "noisium", "sha256": "", "fileName": "noisium.jar", "side": "client", "estimatedSizeMb": 1 },
@@ -41,6 +41,6 @@
   },
   "update": {
     "channel": "stable",
-    "manifestVersion": 1
+    "manifestVersion": 2
   }
 }
